@@ -3,6 +3,8 @@ import ReactLoading from 'react-loading';
 import styled from 'styled-components';
 import { GradientBackground } from '../../pages/BasePage/BasePageStyles';
 import Header from '../Header/Header';
+import PulsatingImage from '../PulsatingImage';
+import TonftPulsImage from '../../assets/pictures/tonftLogoPulse.png';
 
 export interface ILoadingComponentProps {
     children?: ReactNode
@@ -33,12 +35,13 @@ const LoadingComponent: React.FunctionComponent<ILoadingComponentProps> = ({chil
         <LoadingPageContainer>
             {/* <Header width="90%"/> */}
             <LoadingWrapper>
-                <ReactLoading
+                {/* <ReactLoading
                     type="bubbles"
                     color={"#0593FF"}
                     height={"5rem"}
                     width={"5rem"}
-                    />
+                    /> */}
+                <PulsatingImage src={TonftPulsImage} alt="Pulsating Image" />
             </LoadingWrapper>
         </LoadingPageContainer>
     );

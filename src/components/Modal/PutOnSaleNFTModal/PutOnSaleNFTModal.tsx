@@ -1,7 +1,7 @@
 import { Dialog, Switch } from "@headlessui/react";
 import { useForm } from "react-hook-form";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DialogStyled, CloseIcon, Title, MyStyledInput, InfoTextWrapper, LeftText, RightText, Line, PutOnSaleBtn, CustomErrorText, TransactionWrapper, TransactionInfoWrapper, TransactionTitle, TransactionSubtitle, CancelBtnWide, ConfirmBtn, DoneIcon, DialogStyledScroll } from "./PutOnSaleNFTModalStyles";
+import { DialogStyled, CloseIcon, Title, MyStyledInput, InfoTextWrapper, LeftText, RightText, Line, PutOnSaleBtn, CustomErrorText, TransactionWrapper, TransactionInfoWrapper, TransactionTitle, TransactionSubtitle, CancelBtnWide, ConfirmBtn, DoneIcon, DialogStyledScroll, MyStyledRefInput } from "./PutOnSaleNFTModalStyles";
 import ReactLoading from "react-loading";
 import axios from "axios";
 import { connector } from "../../../connector";
@@ -25,15 +25,20 @@ interface PutOnSaleNFTModalProps {
 
 interface FormData {
     price: string;
+    refAmount: string;
 }
 
 export const PutOnSaleNFTModal = ({ close, nftItemAddress, ownerAddress, royaltyPercent, hash, royaltyDest }: PutOnSaleNFTModalProps) => {
     const { t, i18n } = useTranslation(); 
     const navigate = useNavigate();
     const isMobile =  window.innerWidth < 768;
+    const defaultValues: FormData = {
+        price: "",
+        refAmount: "2.5"
+    };
     const initContractRequestsLeft = useRef(0);
     const nftTransferRequestsLeft = useRef(0);
-    const { register, handleSubmit, watch, formState: { errors } } = useForm<FormData>();
+    const { register, handleSubmit, watch, formState: { errors } } = useForm<FormData>({ defaultValues });
     const [lastStep, setLastStep] = useState(false);
     const [initLink, setInitLink] = useState("");
     const [transferLink, setTransferLink] = useState("");
@@ -48,26 +53,34 @@ export const PutOnSaleNFTModal = ({ close, nftItemAddress, ownerAddress, royalty
     const transfered = saleState.transfered;
     const [minPriceError, setMinPriceError] = useState(false);
 
-
     const onSubmit = async (data: FormData) => {
         // substract from price very small random amount
+        // const priceNow = parseFloatPriceFloat((parseFloat(watch("price")) * (1 - parseFloat(watch("refAmount")) / 100)) - (parseFloat(watch("price"))) * ( enabled ? royaltyPercent : 0));
+        const priceNow = watch("price") ? parseFloatPriceFloat((parseFloat(watch("price")) * (1 - parseFloat(watch("refAmount")) / 100)) - (parseFloat(watch("price")) * ( enabled ? royaltyPercent : 0)  / 100)) : 0
+        if(priceNow < 1) {
+            console.log("price now: ", priceNow)
+            setMinPriceError(true);
+            return;
+        }
         const randomNumber = Math.floor(Math.random() * (0.0099 * 1000 - 0.001 * 1000) + 0.001 * 1000) / 1000;
         if(parseFloat(data.price) < 1) {
             setMinPriceError(true);
             return;
         }
+
         let newSalePrice = 0; 
         newSalePrice =  parseFloat((parseFloat(data.price) + randomNumber).toFixed(6));
         rightPrice.current = newSalePrice;
         // send data to backend using axios
         // reverse nft item address
         
-        await axios.get(`https://api.tonft.app/apiv1/getInitLink?nftItemAddress=${nftItemAddress}&fullPrice=${newSalePrice}&royaltyPercent=${enabled ? royaltyPercent : 0}&royaltyAddress=${royaltyDest}&refPercent=2.5`)
+        await axios.get(`https://api.tonft.app/apiv1/getInitLink?nftItemAddress=${nftItemAddress}&fullPrice=${newSalePrice}&royaltyPercent=${enabled ? royaltyPercent : 0}&royaltyAddress=${royaltyDest}&refPercent=${watch("refAmount")}`)
             .then(function (response) {
                 const unixTime = Math.floor(new Date().getTime() / 1000);
                 const link = response.data.link;
                 setLastStep(true);
                 setInitLink(link);
+                setSaleState((state: any) => ({...state, refAmount: watch("refAmount")}));
                 initLinkCreatedAt.current = unixTime;
                 initContractRequestsLeft.current = 120;
             })
@@ -124,7 +137,7 @@ export const PutOnSaleNFTModal = ({ close, nftItemAddress, ownerAddress, royalty
             price: rightPrice.current,
             royaltyPercent: saleState.royaltyOn ? saleState.royaltyOn : 0,
             royaltyAddress: saleState.royaltyOn ? royaltyDest : "EQC1cUOzBT0xfWiaKYGh-IEUeH7RjBvTxwfMJLEVNKKKtsJX",
-            refPercent: "2.5",
+            refPercent: saleState.refAmount,
             hash: hash
         } })
 			.then(function (response) {
@@ -256,14 +269,15 @@ export const PutOnSaleNFTModal = ({ close, nftItemAddress, ownerAddress, royalty
 		<Dialog.Panel as={DialogStyled}>
             <CloseIcon onClick={close} />
             <Title>{t("createSalePage.enterPrice")}</Title>
-            <MyStyledInput maxLength={7}  {...register('price', {required: true, pattern: /^(0|[1-9]\d*)(\.\d+)?$/})} placeholder="Enter price"/>
+            <MyStyledInput maxLength={7} type="number"  {...register('price', {required: true, pattern: /^(0|[1-9]\d*)(\.\d+)?$/})} placeholder="Enter price"/>
             <InfoTextWrapper>
                 <LeftText>{t("createSalePage.serviceFee")}</LeftText>
-                <RightText> 2.5% - { watch("price") ? parseFloatPriceFloat(parseFloat(watch("price")) * 0.025) : 0} TON</RightText>
+                <RightText> {watch("refAmount")}% - { watch("price") ? parseFloatPriceFloat(parseFloat(watch("price")) * parseFloat(watch("refAmount")) / 100) : 0} TON</RightText>
+                <MyStyledRefInput maxLength={2} type="number" {...register('refAmount', {required: true, pattern: /^(0|[1-9]\d*)(\.\d+)?$/})} placeholder="Enter custom ref amount if you want"/>
             </InfoTextWrapper>
             <InfoTextWrapper>
                 <LeftText>{t("createSalePage.royalties")}</LeftText>
-                <RightText>{royaltyPercent}% -  {enabled && watch("price") ?  `${parseFloatPriceFloat((royaltyPercent / 100) * parseFloat(watch("price")))}` : "0 TON"}</RightText>
+                <RightText>{royaltyPercent}% -  {enabled && watch("price") ?  `${parseFloatPriceFloat((royaltyPercent / 100) * parseFloat(watch("price")))}` : "0"} TON</RightText>
                 <Switch
                     checked={saleState.royaltyOn}
                     // disabled={true}
@@ -288,7 +302,7 @@ export const PutOnSaleNFTModal = ({ close, nftItemAddress, ownerAddress, royalty
             <Line />
             <InfoTextWrapper>
                 <LeftText>{t("createSalePage.recieve")}</LeftText>
-                <RightText>{ watch("price") ? parseFloatPriceFloat((parseFloat(watch("price")) * 0.975) - (parseFloat(watch("price")) * ( enabled ? royaltyPercent : 0)  / 100)) : 0} TON</RightText>
+                <RightText>{ watch("price") ? parseFloatPriceFloat((parseFloat(watch("price")) * (1 - parseFloat(watch("refAmount")) / 100)) - (parseFloat(watch("price")) * ( enabled ? royaltyPercent : 0)  / 100)) : 0} TON</RightText>
             </InfoTextWrapper>
             <PutOnSaleBtn onClick={handleSubmit(onSubmit)}>{t("createSalePage.putOnSaleBtn")}</PutOnSaleBtn>
             {errors.price && <CustomErrorText>{t("createSalePage.enterNumber")}</CustomErrorText>}

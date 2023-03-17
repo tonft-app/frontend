@@ -19,6 +19,7 @@ interface PutOnSaleStateInterface {
     putOnSaleState: {
         royaltyOn: boolean
         transfered: boolean
+        refAmount: string
     }
     setMyOnSaleState: (onSaleState: any) => void
 }
@@ -26,7 +27,8 @@ interface PutOnSaleStateInterface {
 export const usePutOnSaleState = create<PutOnSaleStateInterface>()(persist((set) => ({
     putOnSaleState: {
         royaltyOn: false,
-        transfered: false
+        transfered: false,
+        refAmount: "2.5"
     },
     setMyOnSaleState: (myOnSaleState: any) => set(myOnSaleState),
 }), { name: 'putOnSaleState', version: 1}))

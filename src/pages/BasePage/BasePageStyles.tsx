@@ -10,6 +10,7 @@ export const   BasePageContainer = styled.div`
     justify-content: flex-start;
     /* align-self: center; */
     /* width: 90%; */
+    min-height: 100vh;
 
     @media only screen and (min-width: 480px) {
         width: 100%;
@@ -20,6 +21,7 @@ export const   BasePageContainer = styled.div`
 export const GradientBackground = styled.div`
     background: linear-gradient(180.04deg, #FFFFFF 11.27%, rgba(228, 228, 228, 0.3) 68.11%, rgba(224, 224, 224, 0.6) 99.97%);
     width: 100vw;
+    min-height: 100vh;
     left: 0;
     right: 0;
     height: 100vh;

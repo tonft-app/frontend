@@ -96,6 +96,24 @@ export const MyStyledInput = styled.input`
     margin-top: 1.8rem;
     outline: none;
 `
+
+export const MyStyledRefInput = styled.input`
+    margin-left: -4rem;
+    width: 7.7rem;
+    height: 4.7rem;
+    border-color: #E5E8EB;
+    background-color: #FAFAFC;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 10px;
+    color:#00000080;
+    font-size: 1.6rem;
+    padding: 1.5rem 1.5rem;
+    text-align: center;
+    /* margin-bottom: 3rem; */
+    /* margin-top: 1.8rem; */
+    outline: none;
+`
 export const MyStyledInputSearch = styled.input`
   
     width: 100%;
