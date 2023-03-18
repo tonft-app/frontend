@@ -50,7 +50,7 @@ const BasePage = ({} : BasePageProps) => {
     
     return (
         <BasePageContainer>
-            <GradientBackground/>
+            {/* <GradientBackground/> */}
             <Header/>
             { connector.wallet && <Statistics mb='-2.7' mt='2.7' savedFees={statistics.totalSavedForUsers.toFixed(0)} volume={statistics.totalSoldAmount.toFixed(0)}/>}
             { connector.wallet 

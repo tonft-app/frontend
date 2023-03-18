@@ -22,7 +22,7 @@ export const CardWrapper  = styled.div`
     align-items: center;
     justify-content: flex-start;
     margin-bottom: 2.4rem;
-    -webkit-mask-image: -webkit-radial-gradient(white, black); 
+    box-shadow: rgb(0 0 0 / 8%) 0px 4px 16px;
     /* margin-left: 1rem; */
     /* margin-right: 1rem; */
     /* margin: auto; */
@@ -48,7 +48,7 @@ export const CardWrapperHorizontal = styled.div`
     align-items: center;
     justify-content: flex-start;
     margin-bottom: 2.4rem;
-    -webkit-mask-image: -webkit-radial-gradient(white, black); 
+    box-shadow: rgb(0 0 0 / 8%) 0px 4px 16px;
     cursor: pointer;
     margin-right: 2.5rem;
 
