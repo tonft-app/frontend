@@ -47,6 +47,7 @@ export const PutOnSaleNFTModal = ({ close, nftItemAddress, ownerAddress, royalty
     // const [transfered, setTransfered] = useState(false);
     const initLinkCreatedAt = useRef<any>();
     const rightPrice = useRef<number>();
+    const rightRef = useRef<number>();
     const [enabled, setEnabled] = useState(true);
     const setSaleState = usePutOnSaleState(state => state.setMyOnSaleState);
     const saleState = usePutOnSaleState(state => state.putOnSaleState);
@@ -71,16 +72,22 @@ export const PutOnSaleNFTModal = ({ close, nftItemAddress, ownerAddress, royalty
         let newSalePrice = 0; 
         newSalePrice =  parseFloat((parseFloat(data.price) + randomNumber).toFixed(6));
         rightPrice.current = newSalePrice;
+        rightRef.current = parseFloat(watch("refAmount"));
+        // setSaleState((state: any) => ({...state, refAmount: watch("refAmount")}));
         // send data to backend using axios
         // reverse nft item address
-        
-        await axios.get(`https://api.tonft.app/apiv1/getInitLink?nftItemAddress=${nftItemAddress}&fullPrice=${newSalePrice}&royaltyPercent=${enabled ? royaltyPercent : 0}&royaltyAddress=${royaltyDest}&refPercent=${watch("refAmount")}`)
+        console.log(watch("refAmount"), "ref amount")
+        await axios.get(`https://api.tonft.app/apiv1/getInitLink?nftItemAddress=${nftItemAddress}&fullPrice=${newSalePrice}&royaltyPercent=${enabled ? royaltyPercent : 0}&royaltyAddress=${royaltyDest}&refPercent=${rightRef.current}`)
             .then(function (response) {
                 const unixTime = Math.floor(new Date().getTime() / 1000);
                 const link = response.data.link;
                 setLastStep(true);
                 setInitLink(link);
-                setSaleState((state: any) => ({...state, refAmount: watch("refAmount")}));
+                // const refAm = watch("refAmount");
+                // console.log(saleState, "sale state before");
+                // setSaleState((state: any) => ({...state, refAmount: watch("refAmount")}));
+                // setSaleState((state: any) => ({...state, transfered: true}))
+                // console.log(saleState, "sale state after");
                 initLinkCreatedAt.current = unixTime;
                 initContractRequestsLeft.current = 120;
             })
@@ -128,7 +135,7 @@ export const PutOnSaleNFTModal = ({ close, nftItemAddress, ownerAddress, royalty
         }
 
         initContractRequestsLeft.current -= 1;
-
+        // console.log(saleState, "BOBA")
         axios.get('https://api.tonft.app/apiv1/checkTransfer', { params: { 
             contractAddress: contractAddressRef.current,
             nftItemAddress: nftItemAddress,
@@ -137,7 +144,7 @@ export const PutOnSaleNFTModal = ({ close, nftItemAddress, ownerAddress, royalty
             price: rightPrice.current,
             royaltyPercent: saleState.royaltyOn ? saleState.royaltyOn : 0,
             royaltyAddress: saleState.royaltyOn ? royaltyDest : "EQC1cUOzBT0xfWiaKYGh-IEUeH7RjBvTxwfMJLEVNKKKtsJX",
-            refPercent: saleState.refAmount,
+            refPercent: rightRef.current ? rightRef.current : 0,
             hash: hash
         } })
 			.then(function (response) {
@@ -169,7 +176,7 @@ export const PutOnSaleNFTModal = ({ close, nftItemAddress, ownerAddress, royalty
 
     useEffect(() => {
         if(saleState.transfered === true){
-            setSaleState((state: any) => ({ state, transfered: false }))
+            setSaleState((state: any) => ({ ...state, transfered: false }))
             return;
         }
         if(nftTransferRequestsLeft.current > 0) {
